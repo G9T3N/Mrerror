@@ -14,7 +14,7 @@ dist/
 .vite/
 
 # Vite cache
-node_modules/.vite/
+node_modules/*
 
 # Local env files
 .env
