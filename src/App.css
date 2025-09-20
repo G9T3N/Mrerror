@@ -118,3 +118,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* CSS variable for the fixed header height; used to offset anchor targets */
+:root {
+  --site-header-height: 5rem; /* fallback value; desktop overrides via tailwind if necessary */
+}
+
+/* Ensure sections are offset from the fixed header when navigated to via anchors */
+section[id] {
+  scroll-margin-top: var(--site-header-height);
+}
