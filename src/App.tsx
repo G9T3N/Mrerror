@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./App.css";
 import asset1 from "./assets/I21-489;19-443.svg";
 import asset2 from "./assets/I21-491;158-1351.svg";
@@ -24,89 +24,69 @@ import asset21 from "./assets/10-213.webp";
 import logoWithText from "./assets/logo_with_text.png";
 import logoIcon from "./assets/logo_icon.png";
 
-// Types
-interface ProjectCardProps {
-  image: string;
-  title: string;
-  description: string;
-  liveLink?: boolean;
-  cachedLink?: boolean;
-}
-
-interface SkillCategoryProps {
-  title: string;
-  skills: string[];
-}
-
-interface ContactMethodProps {
-  icon: string;
-  text: string;
-}
-
-// Components
-const ProjectCard: React.FC<ProjectCardProps> = ({
-  image,
-  title,
-  description,
-  liveLink = true,
-  cachedLink = false,
-}) => (
-  <div className="border border-[#abb2bf] bg-[#282c33] hover:border-[#297f29] transition-colors duration-300">
-    <img src={image} className="w-full h-48 object-cover" alt={title} />
-    <div className="p-4 border-t border-[#abb2bf] space-y-4">
-      <h3 className="text-white text-xl lg:text-2xl font-medium">{title}</h3>
-      <p className="text-[#abb2bf] text-sm lg:text-base">{description}</p>
-      <div className="flex flex-wrap gap-2 lg:gap-4">
-        {liveLink && (
-          <button className="px-3 py-2 lg:px-4 lg:py-2 border border-[#297f29] text-white text-sm lg:text-base font-medium hover:bg-[#297f29] transition-colors">
-            Live &lt;~&gt;
-          </button>
-        )}
-        {cachedLink && (
-          <button className="px-3 py-2 lg:px-4 lg:py-2 border border-[#abb2bf] text-[#abb2bf] text-sm lg:text-base font-medium hover:bg-[#abb2bf] hover:text-[#282c33] transition-colors">
-            Cached &gt;
-          </button>
-        )}
-      </div>
-    </div>
-  </div>
-);
-
-const SkillCategory: React.FC<SkillCategoryProps> = ({ title, skills }) => (
-  <div className="border border-[#abb2bf] p-3 lg:p-4">
-    <h4 className="text-white text-sm lg:text-base font-semibold mb-2">
-      {title}
-    </h4>
-    <div className="space-y-1 text-[#abb2bf] text-xs lg:text-sm">
-      {skills.map((skill, index) => (
-        <div key={index}>{skill}</div>
-      ))}
-    </div>
-  </div>
-);
-
-const ContactMethod: React.FC<ContactMethodProps> = ({ icon, text }) => (
-  <div className="flex items-center gap-[5px]">
-    <div className="w-6 h-6 lg:w-8 lg:h-8 relative flex-shrink-0">
-      <img src={icon} className="w-full h-full object-contain" alt="" />
-    </div>
-    <span className="text-[#abb2bf] text-sm lg:text-base break-all">
-      {text}
-    </span>
-  </div>
-);
-
-const DotPattern: React.FC<{ className?: string }> = ({ className = "" }) => (
-  <div className={`grid grid-cols-5 gap-3 lg:gap-5 ${className}`}>
-    {Array.from({ length: 25 }).map((_, i) => (
-      <div key={i} className="w-1 h-1 bg-[#abb2bf] rounded-full" />
-    ))}
-  </div>
-);
+// components
+import ProjectCard from "./components/ProjectCard";
+import SkillCategory from "./components/SkillCategory";
+import ContactMethod from "./components/ContactMethod";
+import DotPattern from "./components/DotPattern";
 
 const App: React.FC = () => {
+  const home = useRef(null);
+  const works = useRef(null);
+  const aboutMe = useRef(null);
+  const contacts = useRef(null);
+  const skills = useRef(null);
+  const [activeSection, setActiveSection] = useState<string>("home");
+
+  const scrollToSection = (elementRef: string) => {
+    const target = elementRef?.startsWith("#")
+      ? elementRef.slice(1)
+      : elementRef;
+    const el =
+      document.getElementById(target) || document.querySelector(elementRef);
+    if (el) {
+      const top = (el as HTMLElement).offsetTop;
+      window.scrollTo({ top, behavior: "smooth" });
+      // update active immediately for visual feedback
+      setActiveSection(target);
+    }
+  };
+
+  useEffect(() => {
+    const sections = ["home", "works", "skills", "about-me", "contacts"];
+
+    const onScroll = () => {
+      const viewportCenter = window.innerHeight / 2;
+      let closest = sections[0];
+      let minDistance = Infinity;
+
+      sections.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const distance = Math.abs(rect.top - viewportCenter);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closest = id;
+        }
+      });
+
+      setActiveSection((prev) => (prev === closest ? prev : closest));
+    };
+
+    // initial check
+    onScroll();
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  // React.useEffect(() => {
+  //   window.addEventListener("hashchange", onHashChange);
+  //   return () => window.removeEventListener("hashchange", onHashChange);
+  // }, []);
+
   return (
-    <div className="min-h-screen bg-[#282c33] text-white font-['Fira_Code'] overflow-x-hidden">
+    <div className="min-h-screen bg-[#282c33] text-white font-['Poppins'] overflow-x-hidden">
       {/* Background decorative elements */}
       <div className=" inset-0 pointer-events-none z-0">
         <div className="absolute w-20 h-20 lg:w-[103px] lg:h-[103px] right-4 lg:right-[77px] top-[800px] lg:top-[1622px] hidden md:block">
@@ -143,37 +123,95 @@ const App: React.FC = () => {
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-start gap-4 lg:gap-8">
-            <div className="flex items-start">
-              <span className="text-[#297f29] text-sm lg:text-base font-medium">
+            <div ref={home} className="flex items-start">
+              <span
+                className={`text-[#297f29] text-sm lg:text-base`}
+                aria-hidden
+              >
                 #
               </span>
-              <span className="text-white text-sm lg:text-base font-medium">
+              <a
+                className={`${
+                  activeSection === "home"
+                    ? "text-white font-medium"
+                    : "text-[#abb2bf] font-normal"
+                } text-sm lg:text-base ml-2`}
+                onClick={() => scrollToSection("#home")}
+              >
                 home
-              </span>
+              </a>
             </div>
-            <div className="flex items-start">
-              <span className="text-[#297f29] text-sm lg:text-base font-normal">
+            <div ref={works} className="flex items-start">
+              <span
+                className={`text-[#297f29] text-sm lg:text-base `}
+                aria-hidden
+              >
                 #
               </span>
-              <span className="text-[#abb2bf] text-sm lg:text-base font-normal">
+              <a
+                className={`${
+                  activeSection === "works"
+                    ? "text-white font-medium"
+                    : "text-[#abb2bf] font-normal"
+                } text-sm lg:text-base ml-2`}
+                onClick={() => scrollToSection("#works")}
+              >
                 works
-              </span>
+              </a>
             </div>
-            <div className="flex items-start">
-              <span className="text-[#297f29] text-sm lg:text-base font-normal">
+            <div ref={skills} className="flex items-start">
+              <span
+                className={`text-[#297f29] text-sm lg:text-base`}
+                aria-hidden
+              >
                 #
               </span>
-              <span className="text-[#abb2bf] text-sm lg:text-base font-normal">
+              <a
+                className={`${
+                  activeSection === "skills"
+                    ? "text-white font-medium"
+                    : "text-[#abb2bf] font-normal"
+                } text-sm lg:text-base ml-2`}
+                onClick={() => scrollToSection("#skills")}
+              >
+                skills
+              </a>
+            </div>
+            <div ref={aboutMe} className="flex items-start">
+              <span
+                className={`text-[#297f29] text-sm lg:text-base`}
+                aria-hidden
+              >
+                #
+              </span>
+              <a
+                className={`${
+                  activeSection === "about-me"
+                    ? "text-white font-medium"
+                    : "text-[#abb2bf] font-normal"
+                } text-sm lg:text-base ml-2`}
+                onClick={() => scrollToSection("#about-me")}
+              >
                 about-me
-              </span>
+              </a>
             </div>
-            <div className="flex items-start">
-              <span className="text-[#297f29] text-sm lg:text-base font-normal">
+            <div ref={contacts} className="flex items-start">
+              <span
+                className={`text-[#297f29] text-sm lg:text-base`}
+                aria-hidden
+              >
                 #
               </span>
-              <span className="text-[#abb2bf] text-sm lg:text-base font-normal">
+              <a
+                className={`${
+                  activeSection === "contacts"
+                    ? "text-white font-medium"
+                    : "text-[#abb2bf] font-normal"
+                } text-sm lg:text-base ml-2`}
+                onClick={() => scrollToSection("#contacts")}
+              >
                 contacts
-              </span>
+              </a>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-[#abb2bf] text-sm lg:text-base font-semibold">
@@ -223,90 +261,94 @@ const App: React.FC = () => {
       {/* Main content */}
       <main className="pt-16 lg:pt-20 px-4 lg:px-[171px] space-y-12 lg:space-y-16 relative z-10">
         {/* Hero section */}
-        <section className="flex flex-col lg:flex-row items-start gap-8 lg:gap-16 pt-4 lg:pt-8">
-          <div className="flex-1 space-y-6 lg:space-y-8">
-            <div className="space-y-6 lg:space-y-8">
-              <h1 className="text-xl sm:text-2xl lg:text-[32px] font-medium leading-tight">
-                Mr.Err is a <span className="text-[#297f29]">web designer</span>{" "}
-                and <span className="text-[#297f29]">front-end developer</span>
-              </h1>
-              <p className="text-[#abb2bf] text-sm lg:text-base max-w-[463px]">
-                He crafts responsive websites where technologies meet creativity
-              </p>
-              <button className="px-3 py-2 lg:px-4 lg:py-2 border border-[#297f29] text-white text-sm lg:text-base font-medium hover:bg-[#297f29] transition-colors">
-                Contact me!!
-              </button>
+        <section id="home" aria-label="Home" className="h-screen">
+          <div className="flex flex-col lg:flex-row  justify-center items-center  ">
+            <div className="flex-1 ">
+              <div className="flex flex-col items-start  gap-4">
+                <h1 className="w-1/2 text-xl sm:text-2xl lg:text-[46px]  font-medium leading-12!">
+                  Mr.Err is a{" "}
+                  <span className="text-[#297f29]">web designer</span> and{" "}
+                  <span className="text-[#297f29]">front-end developer</span>
+                </h1>
+                <p className="text-[#abb2bf] text-sm lg:text-base max-w-[463px]">
+                  He crafts responsive websites where technologies meet
+                  creativity
+                </p>
+                <button className="px-3 py-2 lg:px-4 lg:py-2 border border-[#297f29] text-white text-sm lg:text-base font-medium hover:bg-[#297f29] transition-colors">
+                  Contact me!!
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div className="relative w-full lg:w-auto flex justify-center lg:justify-end">
-            <div className="relative">
-              <div className="w-24 h-24 lg:w-[155px] lg:h-[155px] border border-[#abb2bf] absolute left-0 top-12 lg:top-[84px] hidden lg:block" />
-              <img
-                src={asset21}
-                className="w-full max-w-[300px] lg:max-w-[457px] h-auto"
-                alt="Mr.Err portrait"
-              />
-              <div className="absolute bottom-2 right-2 lg:bottom-4 lg:right-4 w-16 h-16 lg:w-[84px] lg:h-[84px] hidden md:block">
-                <DotPattern className="gap-2 lg:gap-[16px]" />
-              </div>
-              <div className="absolute bottom-0 left-2 lg:left-auto lg:right-4 p-2 bg-[#282c33] border border-[#abb2bf] flex items-center gap-2.5 max-w-[280px] lg:max-w-[402px]">
-                <div className="w-3 h-3 lg:w-4 lg:h-4 bg-[#297f29] border border-[#297f29] flex-shrink-0" />
-                <span className="text-[#abb2bf] text-xs lg:text-base">
-                  Currently working on Portfolio
-                </span>
+            <div className="relative w-full lg:w-auto flex justify-center lg:justify-end">
+              <div className="relative">
+                <div className="w-24 h-24 lg:w-[155px] lg:h-[155px] border border-[#abb2bf] absolute left-0 top-12 lg:top-[84px] hidden lg:block" />
+                <img
+                  src={asset21}
+                  className="w-full max-w-[300px] lg:max-w-[457px] h-auto"
+                  alt="Mr.Err portrait"
+                />
+                <div className="absolute bottom-2 right-2 lg:bottom-4 lg:right-4 w-16 h-16 lg:w-[84px] lg:h-[84px] hidden md:block">
+                  <DotPattern className="gap-2 lg:gap-[16px]" />
+                </div>
+                <div className="absolute bottom-0 left-2 lg:left-auto lg:right-4 p-2 bg-[#282c33] border border-[#abb2bf] flex items-center gap-2.5 max-w-[280px] lg:max-w-[402px]">
+                  <div className="w-3 h-3 lg:w-4 lg:h-4 bg-[#297f29] border border-[#297f29] flex-shrink-0" />
+                  <span className="text-[#abb2bf] text-xs lg:text-base">
+                    Currently working on Portfolio
+                  </span>
+                </div>
               </div>
             </div>
           </div>
+          <section className="flex justify-center py-4 lg:py-8">
+            <div className="relative max-w-4xl w-full">
+              <div className="p-4 lg:p-8 bg-[#282c33] border border-[#abb2bf] relative">
+                <h2 className="text-white text-lg lg:text-2xl font-medium text-center lg:text-left">
+                  With great power comes great electricity bill
+                </h2>
+                <div className="absolute -top-[14px] left-[11px] px-2 py-1 bg-[#282c33] hidden lg:block">
+                  <img
+                    src={asset15}
+                    className="w-[20px] h-[16px] lg:w-[25.47px] lg:h-[20.70px]"
+                    alt=""
+                  />
+                </div>
+                <div className="absolute bottom-2 right-2 lg:bottom-4 lg:right-4 p-2 lg:p-4 border border-[#abb2bf]">
+                  <span className="text-white text-lg lg:text-2xl font-normal">
+                    - Dr. Who
+                  </span>
+                </div>
+                <div className="absolute -bottom-[14px] right-[30px] lg:right-[54px] px-2 py-1 bg-[#282c33] hidden lg:block">
+                  <img
+                    src={asset16}
+                    className="w-[20px] h-[16px] lg:w-[25.47px] lg:h-[20.70px]"
+                    alt=""
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
         </section>
 
         {/* Quote section */}
-        <section className="flex justify-center py-4 lg:py-8">
-          <div className="relative max-w-4xl w-full">
-            <div className="p-4 lg:p-8 bg-[#282c33] border border-[#abb2bf] relative">
-              <h2 className="text-white text-lg lg:text-2xl font-medium text-center lg:text-left">
-                With great power comes great electricity bill
-              </h2>
-              <div className="absolute -top-[14px] left-[11px] px-2 py-1 bg-[#282c33] hidden lg:block">
-                <img
-                  src={asset15}
-                  className="w-[20px] h-[16px] lg:w-[25.47px] lg:h-[20.70px]"
-                  alt=""
-                />
-              </div>
-              <div className="absolute bottom-2 right-2 lg:bottom-4 lg:right-4 p-2 lg:p-4 border border-[#abb2bf]">
-                <span className="text-white text-lg lg:text-2xl font-normal">
-                  - Dr. Who
-                </span>
-              </div>
-              <div className="absolute -bottom-[14px] right-[30px] lg:right-[54px] px-2 py-1 bg-[#282c33] hidden lg:block">
-                <img
-                  src={asset16}
-                  className="w-[20px] h-[16px] lg:w-[25.47px] lg:h-[20.70px]"
-                  alt=""
-                />
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Projects section */}
-        <section className="space-y-8 lg:space-y-12">
+        <section
+          id="works"
+          aria-label="Projects"
+          className="flex flex-col gap-8 justify-center  h-screen"
+        >
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-4 w-full lg:w-auto">
-              <div className="flex items-start">
+              <div className="flex items-center">
                 <span className="text-[#297f29] text-2xl lg:text-[32px] font-medium">
                   #
                 </span>
                 <span className="text-white text-2xl lg:text-[32px] font-medium">
-                  projects
+                  Projects
                 </span>
               </div>
-              <img
-                src={asset9}
-                className="flex-1 h-px hidden lg:block"
-                alt=""
-              />
+              <img src={asset7} className="flex-1  hidden lg:block" alt="" />
             </div>
             <div className="text-white text-sm lg:text-base font-medium">
               View all ~~&gt;
@@ -337,8 +379,11 @@ const App: React.FC = () => {
         </section>
 
         {/* Skills section */}
-        <section className="space-y-8 lg:space-y-12">
-          <div className="flex items-center gap-4">
+        <section
+          id={"skills"}
+          className="flex flex-col gap-8 h-screen justify-center"
+        >
+          <div className="flex justify-between items-center gap-20">
             <div className="flex items-start">
               <span className="text-[#297f29] text-2xl lg:text-[32px] font-medium">
                 #
@@ -347,7 +392,7 @@ const App: React.FC = () => {
                 skills
               </span>
             </div>
-            <img src={asset8} className="flex-1 h-px hidden lg:block" alt="" />
+            <img src={asset7} className="flex-1  hidden lg:block" alt="" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -404,17 +449,21 @@ const App: React.FC = () => {
         </section>
 
         {/* About me section */}
-        <section className="space-y-8 lg:space-y-12">
-          <div className="flex items-center gap-4">
-            <div className="flex items-start">
+        <section
+          id="about-me"
+          aria-label="About me"
+          className="flex flex-col justify-center gap-8 h-screen"
+        >
+          <div className="flex justify-between items-center gap-20">
+            <div className="flex items-start ">
               <span className="text-[#297f29] text-2xl lg:text-[32px] font-medium">
                 #
               </span>
               <span className="text-white text-2xl lg:text-[32px] font-medium">
-                about-me
+                About me
               </span>
             </div>
-            <img src={asset7} className="flex-1 h-px hidden lg:block" alt="" />
+            <img src={asset7} className="flex-1 hidden lg:block" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -454,9 +503,13 @@ const App: React.FC = () => {
         </section>
 
         {/* Contacts section */}
-        <section className="space-y-8 lg:space-y-12">
-          <div className="flex items-center gap-4">
-            <div className="flex items-start">
+        <section
+          id="contacts"
+          aria-label="Contacts"
+          className="flex flex-col justify-center gap-8 h-screen"
+        >
+          <div className="flex justify-between items-center gap-20">
+            <div className="flex items-start ">
               <span className="text-[#297f29] text-2xl lg:text-[32px] font-medium">
                 #
               </span>
@@ -464,7 +517,7 @@ const App: React.FC = () => {
                 contacts
               </span>
             </div>
-            <img src={asset4} className="flex-1 h-px hidden lg:block" alt="" />
+            <img src={asset7} className="flex-1 hidden lg:block" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
