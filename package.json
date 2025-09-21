@@ -5,12 +5,12 @@
   "type": "module",
   "homepage": "https://G9T3N.github.io/Mrerr/",
   "scripts": {
-  "dev": "vite",
-  "predeploy": "pnpm build",
-  "deploy": "gh-pages -d dist",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview"
+    "dev": "vite",
+    "predeploy": "pnpm build",
+    "deploy": "gh-pages -d dist",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
