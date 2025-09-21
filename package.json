@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://www.mrerr.com",
+  "homepage": "https://G9T3N.github.io/Mrerr",
   "scripts": {
     "dev": "vite",
     "predeploy": "pnpm build",
